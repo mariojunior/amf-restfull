@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   width="537" height="264">
+	
+	<fx:Declarations>
+		<s:DateTimeFormatter id="dtFormatter" dateTimePattern="DD/MM/YYYY" />
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.collections.IList;
+			import mx.controls.Alert;
+			
+			[Bindable]
+			private var _dp : IList;
+			
+			
+			protected function btnClickHandler(event:MouseEvent):void
+			{
+				var request:URLRequest = new URLRequest("http://localhost:8080/amfrestfull/person.amf");
+			    request.method = URLRequestMethod.GET;
+			    var reqStream:URLStream = new URLStream();
+			    reqStream.addEventListener(Event.COMPLETE, handleCompleteEvent)
+			    reqStream.addEventListener(IOErrorEvent.IO_ERROR, handleErrorEvent)
+				reqStream.addEventListener(ProgressEvent.PROGRESS, handleProgressEvent);
+			   
+				try {
+					reqStream.load(request);
+					
+			    } catch (error:Error) {
+				    Alert.show(error.toString());
+			    }
+			}
+			
+			
+			private function handleCompleteEvent(e:Event):void
+			{
+				var stream:URLStream = URLStream( e.target );
+				_dp = (stream.readObject() as ArrayCollection);
+			}
+			
+			private function handleErrorEvent(e:IOErrorEvent):void
+			{
+				Alert.show(e.errorID + ": " + e.text);
+			}
+			
+			
+			private function handleProgressEvent(e:ProgressEvent):void
+			{
+				trace("Bytes loaded " + e.bytesLoaded + " of " + e.bytesTotal);
+			}
+			
+			
+		]]>
+	</fx:Script>
+	
+	
+	<s:Label x="10" y="10" text="Exemplo de Cliente RestFull trafegando objetos AMF."/>
+	
+	<s:Button x="10" y="30" label="Carregar dados." click="btnClickHandler(event)"/>
+	<s:Button x="129" y="30" label="Limpar Grid." click="{_dp = null}"/>
+	
+	<s:DataGrid x="10" y="63" width="517" height="186" 
+				requestedRowCount="4" dataProvider="{_dp}">
+		<s:columns>
+			<s:ArrayList>
+				<s:GridColumn dataField="id" headerText="Id" />
+				<s:GridColumn dataField="firstName" headerText="Nome" />
+				<s:GridColumn dataField="twitter" headerText="twitter" />
+				<s:GridColumn dataField="age" headerText="Idade" />
+				<s:GridColumn dataField="included" headerText="Inclusão" formatter="{dtFormatter}" />
+			</s:ArrayList>
+		</s:columns>
+	</s:DataGrid>
+	
+</s:Application>
